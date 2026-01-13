@@ -1,0 +1,95 @@
+<%- include('partials/header') %>
+
+<style>
+
+    {
+        margin:0;
+        padding:0;
+        border:0;
+        outline: none;
+        line-height: 1;
+        border-collapse: collapse;
+        border-spacing: 0;
+        quotes: none;
+        display:block;
+        font: inherit;
+        font-size: 100%;
+        vertical-align: baseline;
+    }
+
+    #TL_ZONE{
+        outline: solid 1px black;
+        min-width:90%;
+        min-height: 500px;
+        padding: 10px;
+    }
+    .TL_LANE{
+        width: 100%;
+        min-width: 100%;
+        min-height: 80px;
+        outline: 1px dotted red;
+    }
+    .PROTO{
+        display:none;
+    }
+    .TL_ELEMENT{
+        /*margin: auto;*/
+        outline: solid 3px green;
+        min-height: 50px;
+        padding: 0 5px;"
+    }
+    .TL_ELEMENT_CHILD{
+        position: absolute;
+    }
+    #TL_MAIN_ELEMENT{
+        min-width: 100%;
+        max-width: 100%;
+        min-height: 100px;
+    }
+    #TL_RULER canvas{
+        min-width:100%;
+        height: 50px;
+    }
+    .arrow-up {
+        width: 0;
+        height: 0;
+        border-left: 10px solid transparent;
+        border-right: 10px solid transparent;
+        border-bottom: 10px solid red;
+    }
+    .RULER_MARKER_BOT{
+        min-width:20px;
+        max-width:20px;
+        min-height:15px;
+        max-height:15px;
+        border-radius: 1px 1px 10px 10px;
+        background-color:red;
+    }
+    .RULER_MARKER{
+        position: absolute;
+        min-width:20px;
+        min-height:20px;
+        max-width:20px;
+        max-height:20px;
+        margin-top:-5px;
+    }
+    #RULER_MARKER_ORIGINAL{
+        display:none;
+    }
+
+</style>
+
+<script type="text/javascript" defer>
+
+
+</script>
+
+
+<h1>Main Content</h1>
+<p><%= mid_content %></p>
+
+
+
+
+
+<%- include('partials/footer') %>

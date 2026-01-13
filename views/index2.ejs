@@ -1,0 +1,955 @@
+<%- include('partials/header') %>
+
+<style>
+
+    body {
+        margin:0;
+        padding:0;
+        border:0;
+        outline: none;
+        line-height: 1;
+        border-collapse: collapse;
+        border-spacing: 0;
+        quotes: none;
+        display:block;
+        font: inherit;
+        font-size: 100%;
+        vertical-align: baseline;
+    }
+    #TL_ZONE{
+        outline: solid 1px black;
+        min-width:95%;
+        max-width: 95%;
+        min-height: 500px;
+        margin:20px;
+        overflow-x: hidden;
+    }
+    #TL_ZONE_INNER{
+        min-width: <%= tl_width %>;
+        max-width: <%= tl_width %>;
+    }
+    .TL_LANE{
+        width: 100%;
+        min-width: 100%;
+        min-height: 65px;
+        max-height: 100px;
+        overflow: visible;
+        /*outline: 1px dotted red;*/
+        position:relative;
+    }
+    .TL_ELEMENT{
+        /*border: solid 3px green;*/
+        min-height: 50px;
+        display: grid;
+        grid-template-columns: 20px 1fr;
+        grid-gap: 5px;
+    }
+    .PROTO{
+        display:none;
+    }
+    .TL_ELEMENT p{
+        margin: 0px;
+    }
+
+    .TL_ELEMENT_BODY{
+        display: none;
+        padding:20px;
+        clear:both;
+    }
+    .TL_ELEMENT_CRUSHED_SHOW{
+        border-radius: 0 0 0 20px !important;
+        /*background: linear-gradient(90deg,rgba(255, 255, 0, 1) 5%, rgba(255, 255, 255, .8) 100%);
+        border: 3px solid transparent;
+        border-image: linear-gradient(90deg,rgba(0, 100, 0, 1) 10%, rgba(0, 100, 0, 0) 100%);
+        border-image-slice: 1;*/
+
+        /*background-color: red;*/
+        /*border: none;*/
+        /*mask: conic-gradient(from -135deg at right,#0000,#000 1deg 89deg,#0000 90deg) 50%/100% 20px;*/
+        /*min-width: <%= min_child_width %>px !important;*/
+        /*width: <%= min_child_width %>px !important;*/
+        mask: conic-gradient(from -135deg at right,#0000,#000 1deg 89deg,#0000 90deg) 50%/100% 9px  !important;
+        max-height: 50% !important;
+        border: solid 6px #ff6700 !important;
+        opacity:90%;
+    }
+    .TL_ELEMENT_NO_END{
+       mask: conic-gradient(from -135deg at right,#0000,#000 1deg 89deg,#0000 90deg) 50%/100% 9px  !important;
+        max-height: 50% !important;
+        border: solid 6px #ff6700 !important;
+        opacity:90%;
+    }
+    .TL_ELEMENT_HIGHLIGHTED{
+        background-color:yellow  !important;
+        top: -10px !important;
+    }
+    .TL_ELEMENT_CRUSHED_HIDE{
+        display: none;
+        /*min-width: <%= min_child_width %>px !important;
+        width: <%= min_child_width %>px !important;*/
+    }
+    .TL_SCROLL_TO{
+        opacity: 90%;
+    }
+
+    #TL_RULER{
+        position: relative;
+        top:12px;
+    }
+    #TL_RULER canvas{
+        min-width:100%;
+        height: 50px;
+        margin: 0px 20px;
+    }
+
+    #TL_MAIN_ELEMENT_NAME {
+        margin:20px;
+        cursor: zoom-out;
+    }
+    #TL_MAIN_ELEMENT{
+        min-width:100%;
+        max-width:100%;
+        min-height: 100px;
+    }
+    .TL_ELEMENT_CHILD{
+        top: 4px;
+        position: absolute;
+        background-color:white;
+        border-radius: 0 20px 0 20px;
+        border: solid 5px #a89be1;
+    }
+    .arrow-up {
+        width: 0;
+        height: 0;
+        border-left: 10px solid transparent;
+        border-right: 10px solid transparent;
+        border-bottom: 10px solid red;
+    }
+    .arrow-up_UNSEEN {
+        border-bottom: 10px solid purple;
+    }
+    .RULER_MARKER_BOT{
+        min-width:20px;
+        max-width:20px;
+        min-height:15px;
+        max-height:15px;
+        border-radius: 1px 1px 10px 10px;
+        background-color:red;
+        color: white;
+    }
+    .RULER_MARKER_BOT span.elements_number{
+        position: relative;
+        top: -5px;
+        right: -6px;
+    }
+
+    .RULER_MARKER_BOT_UNSEEN{
+        background-color:purple;
+    }
+    .RULER_MARKER{
+        position: absolute;
+        min-width:20px;
+        min-height:20px;
+        max-width:20px;
+        max-height:20px;
+        margin-top:-5px;
+        cursor: cell;
+    }
+    #RULER_MARKER_ORIGINAL{
+        display:none;
+    }
+
+    .tooltip {
+        position: relative;
+        display: inline-block;
+        border-bottom: 1px dotted black;
+    }
+    .tooltiptext {
+        visibility: hidden;
+        width: 500px;
+        background-color: #555;
+        color: #fff;
+        text-align: center;
+        border-radius: 6px;
+        padding: 5px 0;
+        position: absolute;
+        z-index: 10;
+        bottom: 30px;
+        left: 50%;
+        margin-left: -60px;
+        opacity: 0.2;
+        transition: opacity 0.5s;
+
+    }
+    .tooltip_element .tooltiptext {
+        width: 100px;
+        bottom: 50px;
+        left: 50%;
+        margin-left: -60px;
+        opacity: 0.2;
+        transition: opacity 0.5s;
+
+    }
+
+    .RULER_MARKER:hover .tooltiptext {
+        visibility: visible;
+        opacity: 0.85;
+    }
+    .tooltip_element:hover .tooltiptext {
+        visibility: visible;
+        opacity: 0.85;
+    }
+
+    [data-line] {
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 1px;
+        background: rgba(0, 0, 0, 0.8);
+        -webkit-transform-origin: left top;
+        transform-origin: left top;
+    }
+
+
+    .TL_ELEMENT_NAME{
+        float:right;
+        margin:5px;
+    }
+    .TL_ELEMENT_CONTROL{
+        float:left;
+        margin:5px;
+    }
+    .TL_ELEMENT_CONTROL div{
+        cursor: pointer;
+    }
+
+    /******* Z-INDEXes ********/
+    [data-line] {
+        z-index: 5;
+    }
+        .TL_ELEMENT_CHILD{
+        z-index: 10;
+    }
+    .TL_ELEMENT_CRUSHED_SHOW{
+        z-index: 20 !important;
+    }
+    .TL_ELEMENT_HIGHLIGHTED{
+        z-index: 20 !important;
+    }
+    .tooltiptext{
+        z-index: 30 !important;
+    }
+    .tooltip{
+        z-index: 30 !important;
+    }
+    .TL_SCROLL_TO{
+        z-index: 40 !important;
+    }
+
+
+</style>
+
+<!--
+<h1>Main Content</h1>
+<p><%= mid_content %></p>
+-->
+<div id="TL_MAIN_ELEMENT_NAME" onClick="unZoom()"></div>
+<div id="TL_ZONE">
+
+    <div id="TL_ZONE_INNER">
+        <div class="TL_LANE">
+
+            <div id="TL_MAIN_ELEMENT" class="TL_ELEMENT">
+
+                <div id="TL_RULER">
+                    <canvas></canvas>
+                    <div id="RULER_MARKER_ORIGINAL" class="RULER_MARKER">
+                        <span class="tooltiptext">Tooltip text</span>
+                        <div class="RULER_MARKER_TOP arrow-up"></div>
+                        <div class="RULER_MARKER_BOT"><span class="elements_number">1</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>  <!-- end lane -->
+
+        <div class="TL_LANE TL_CHILD_LANE PROTO" id="TL_LANE_PROTO">
+
+        </div>
+        <div class="TL_ELEMENT PROTO" id="TL_ELEMENT_PROTO">
+            <div class="TL_ELEMENT_CONTROL">
+                <div class="TL_ZOOM tooltip_element">🔍<span class="tooltiptext">Zoom</span></div>
+                <div class="TL_DETAIL tooltip_element">👁<span class="tooltiptext">Details</span></div>
+            </div>
+
+            <div class="TL_ELEMENT_NAME"></div>
+            <div></div>
+            <div class="TL_ELEMENT_BODY">
+
+                <h2>THE ILIAD BOOK 1, TRANSLATED BY A. T. MURRAY</h2>
+                <p>[1]&nbsp;The wrath sing, goddess, of Peleus' son, Achilles, that destructive wrath which brought countless woes
+                    upon the Achaeans, and sent forth to Hades many valiant souls of heroes, and made them themselves spoil for dogs
+                    and every bird; thus the plan of Zeus came to fulfillment,&nbsp;from the time when first they parted in strife
+                    Atreus' son, king of men, and brilliant Achilles.</p>
+                <p>[8] Who then of the gods was it that brought these two together to contend? The son of Leto and Zeus; for he in
+                    anger against the king roused throughout the host an evil pestilence, and the people began to perish, because
+                    upon the priest Chryses the son of Atreus had wrought dishonour. For he had come to the swift ships of the
+                    Achaeans to free his daughter, bearing ransom past counting; and in his hands he held the wreaths of Apollo who
+                    strikes from afar, on a staff of gold; and he implored all the Achaeans, but most of all the two sons of Atreus,
+                    the marshallers of the people: Sons of Atreus, and other well-greaved Achaeans, to you may the gods who have
+                    homes upon Olympus grant that you sack the city of Priam, and return safe to your homes; but my dear child
+                    release to me, and accept the ransom out of reverence for the son of Zeus, Apollo who strikes from afar.</p>
+                <p>[22] Then all the rest of the Achaeans shouted assent, to reverence the priest and accept the glorious ransom,
+                    yet the thing did not please the heart of Agamemnon, son of Atreus, but he sent him away harshly, and laid upon
+                    him a stern command: &quot;Let me not find you, old man, by the hollow ships, either tarrying now or coming back
+                    later, lest your staff and the wreath of the god not protect you. Her I will not set free. Sooner shall old age
+                    come upon her in our house, in Argos, far from her native land, as she walks to and fro before the loom and
+                    serves my bed. But go, do not anger me, that you may return the safer.&quot;</p>
+                <p>[33] So he spoke, and the old man was seized with fear and obeyed his word. He went forth in silence along the
+                    shore of the loud-resounding sea, and earnestly then, when he had gone apart, the old man prayed&nbsp;to the
+                    lord Apollo, whom fair-haired Leto bore: &quot;Hear me, god of the silver bow, who stand over Chryse and holy
+                    Cilla, and rule mightily over Tenedos, Sminthian god, if ever I roofed over a temple to your pleasing, or if
+                    ever I burned to you fat thigh-pieces of bulls and goats,&nbsp;fulfill this prayer for me: let the Danaans pay
+                    for my tears by your arrows.&quot;</p>
+                <p>[43] So he spoke in prayer, and Phoebus Apollo heard him. Down from the peaks of Olympus he strode, angered at
+                    heart, bearing on his shoulders his bow and covered quiver. The arrows rattled on the shoulders of the angry god
+                    as he moved, and his coming was like the night. Then he sat down apart from the ships and let fly an arrow:
+                    terrible was the twang of the silver bow. The mules he assailed first and the swift dogs, but then on the men
+                    themselves he let fly his stinging shafts, and struck; and constantly the pyres of the dead burned thick.</p>
+                <p>[53] For nine days the missiles of the god ranged among the host, but on the tenth Achilles called the people
+                    to assembly, for the goddess, white-armed Hera, had put it in his heart, since she pitied the Danaans, when she
+                    saw them dying. When they were assembled and gathered together, among them arose and spoke swift-footed
+                    Achilles: &quot;Son of Atreus, now I think we shall return home, beaten back again, should we even escape
+                    death,&nbsp;if war and pestilence alike are to ravage the Achaeans. But come, let us ask some seer or priest, or
+                    some reader of dreams&mdash;for a dream too is from Zeus&mdash;who might say why Phoebus Apollo is so angry,
+                    whether he finds fault with a vow or a hecatomb; in hope that he may accept the savour of lambs and unblemished
+                    goats, and be willing to ward off the pestilence from us.&quot;</p>
+                <p>[68] When he had thus spoken he sat down, and among them arose Calchas son of Thestor, far the best of
+                    bird-diviners, who knew the things that were, and that were to be, and that had been before, and who had guided
+                    the ships of the Achaeans to Ilios by his own prophetic powers which Phoebus Apollo had bestowed upon him. He
+                    with good intent addressed the gathering, and spoke among them: &quot;Achilles, dear to Zeus, you bid me declare
+                    the wrath of Apollo, the lord who strikes from afar. Therefore I will speak; but take thought and swear that you
+                    will readily defend me with word and with might of hand; for I think I shall anger a man who rules mightily over
+                    all the Argives, and whom the Achaeans obey. For mightier is a king, when he is angry at a lesser man. Even if
+                    he swallows down his wrath for that day, yet afterwards he cherishes resentment in his heart till he brings it
+                    to fulfillment. Say then, if you will keep me safe.&quot;</p>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="js/html-line.js"></script>
+
+<script type="text/javascript" defer>
+    const min_child_width = '<%= min_child_width %>';
+    let zone_width =0
+    let zone_inner_width =0
+    let canvas_inner_width =0
+    document.addEventListener("DOMContentLoaded", (event) => {
+
+        const fetch_url = '<%= fetch_url %>';
+        const zoom = 0;
+        const offset_element = '<%= offset_element %>';
+        const show_detail = '<%= show_detail %>';
+
+        $(window).bind('resize', function(e)
+        {
+            if (window.RT) clearTimeout(window.RT);
+            window.RT = setTimeout(function()
+            {
+                this.location.reload(false); /* false to get page from cache */
+            }, 1000);
+        });
+
+        let canvas = document.querySelector('#TL_MAIN_ELEMENT canvas');
+        let canvas_jquery = $('#TL_MAIN_ELEMENT canvas');
+        let main_element = $('#TL_MAIN_ELEMENT');
+
+        const zone = $('#TL_ZONE');
+        const inner_zone = $('#TL_ZONE_INNER');
+        zone_width = zone.width();
+
+        const canvas_width_reduction =  stripPX(canvas_jquery.css('margin-left')) + stripPX(canvas_jquery.css('margin-right'));
+
+        zone_inner_width = inner_zone.width() - canvas_width_reduction;
+        canvas_inner_width = canvas_jquery.width() - canvas_width_reduction;
+
+        if(inner_zone.width() > zone.width()){
+            zone.css('overflow-x','scroll');
+        }
+
+        var time_line_data = fetch(fetch_url)
+            .then(response => response.json())
+            .then(function (data) {
+                //console.log(data);
+                //console.log(data.data);
+
+                const tl_data = data.data;
+                const children = tl_data.children;
+
+                //console.log("years : " + tl_data.main.year_duration);
+
+                //let zone_wdth = $('#TL_ZONE').width();
+
+                tl_title = tl_data.main.name + " (" + tl_data.main.start_rough_year + " - " + tl_data.main.end_rough_year + ")";
+                $('#TL_MAIN_ELEMENT_NAME').text(tl_title);
+
+
+                let canvas_scale = 1;
+                let canvas_width = main_element.width() / canvas_scale;
+                let unscaled_canvas_width = main_element.width();
+
+                while(canvas_width > 30000){
+                    canvas_scale = canvas_scale * 2;
+                    canvas_width = main_element.width() / canvas_scale
+                }
+
+                unscaled_canvas_width = Math.round(unscaled_canvas_width - canvas_width_reduction);
+                canvas.width = (canvas_width - canvas_width_reduction);
+                canvas.height = canvas_jquery.height();
+                canvas_jquery.css('max-width',unscaled_canvas_width);
+                canvas_jquery.css('min-width',unscaled_canvas_width);
+
+                //console.log(canvas_jquery.width());
+
+                if (!canvas.getContext) {
+                    return;
+                }
+                const ctx = canvas.getContext('2d');
+                let ruler_marks = drawRuler(canvas_scale,tl_data.main,ctx,canvas.width);
+
+                console.log("~~~~ RULER DATA ~~~~")
+                console.log(ruler_marks);
+                localStorage.setItem('ruler_marks',JSON.stringify(ruler_marks));
+
+                child_location = drawChildren(ruler_marks, children);
+                //drawMarkers(ruler_marks, children, child_location);
+
+                //TODO: determine if really needed;
+                localStorage.setItem('child_location',JSON.stringify(child_location));
+
+
+                //$('.TL_ELEMENT_CRUSHED').hide();
+                $('.TL_ELEMENT_CRUSHED').addClass('TL_ELEMENT_CRUSHED_HIDE');
+
+                if(offset_element >= 0) {
+                    console.log('#TL_ELEMENT_'+offset_element);
+                    console.log(offset_element);
+                    let scroll_child = $('#TL_ELEMENT_'+offset_element);
+                    scroll_child.addClass('TL_SCROLL_TO');
+                    scroll_child.show();
+
+                    console.log($('#TL_ELEMENT_'+offset_element).html());
+                    console.log(scroll_child.offset().left);
+                    console.log(scroll_child.width());
+                    if(scroll_child !== undefined) {
+                        left_side = scroll_child.offset().left;
+                        let multiplier = 0.5;
+                        if(show_detail!== undefined && show_detail == 'true'){
+                            multiplier = multiplier = 0.2;
+                            let tl_body = scroll_child.find('div.TL_ELEMENT_BODY');
+                            if(tl_body){
+                                tl_body.show();
+                            }
+                        }
+                        let scroll_to = left_side - (scroll_child.width() * multiplier);
+                        console.log(scroll_to);
+                        //$('#TL_ZONE').scrollLeft(scroll_to);
+                        $('#TL_ZONE').animate({scrollLeft: scroll_to}, 800);
+                    }
+                }
+            })
+            .catch(error => console.error('Error:', error));
+
+        time_line_data.then(result => {
+            //console.log(result);
+        })
+
+    }); //dom loaded
+
+    /*function drawMarkers(ruler_marks, children){
+
+    }*/
+
+    function showCrushed(marker_id,offset){
+        $('.TL_ELEMENT_HIGHLIGHTED').removeClass('TL_ELEMENT_HIGHLIGHTED');
+        $('.TL_ELEMENT_CRUSHED_SHOW').each(function(){
+                $(this).addClass('TL_ELEMENT_CRUSHED_HIDE');
+                $(this).removeClass('TL_ELEMENT_CRUSHED_SHOW');
+        });
+        let these_elements = $(".ELEMENT_OF_MARKER_"+marker_id);
+        let element_width_max = zone_width / 2; //cant take up more than half the visible screen
+        console.log("offset     "+offset);
+        console.log("zone_inner_width "+zone_inner_width);
+
+        these_elements.each(function(){
+            console.log($(this).attr('id'));
+            console.log($(this).data('crushed'));
+            if($(this).data('crushed')) {
+                console.log("crushed");
+                $(this).addClass('TL_ELEMENT_CRUSHED_SHOW');
+                $(this).removeClass('TL_ELEMENT_CRUSHED_HIDE');
+                console.log("element_width "+element_width_max);
+
+                $(this).css('min-width', 'auto');
+                $(this).css('max-width', element_width_max + "px");
+
+                //make sure element doesn't extend off right side of screen
+                if(offset + $(this).width() > canvas_inner_width) {
+                    this_element_width =  canvas_inner_width - offset;
+                    console.log("element_width "+this_element_width);
+                    $(this).css('max-width', this_element_width + "px");
+                }
+            }
+            $(this).addClass('TL_ELEMENT_HIGHLIGHTED');
+        });
+        /*these_elements.addClass('TL_ELEMENT_CRUSHED_SHOW');
+        these_elements.removeClass('TL_ELEMENT_CRUSHED_HIDE');*/
+    }
+
+    function stripPX(val){
+        return parseInt(val.substring(0, val.length - 2));
+    }
+
+    function unZoom(){
+        let query_aprams =  this.location.href.split("&");
+        let new_url = query_aprams[0];
+        query_aprams.forEach(function(param){
+            if(!param.includes('tl_width')){
+                new_url+'&'+param;
+            }
+        });
+        this.location = new_url;
+    }
+
+    function setZoomPX(zoom, child_index, detail){
+        zoom = Math.round(zoom);
+        let query_aprams =  this.location.href.split("&");
+        //console.log(query_aprams);
+        let new_url = query_aprams[0];
+        query_aprams.forEach(function(param){
+            if(!param.includes('tl_width')){
+                new_url+'&'+param;
+            }
+        });
+        new_url+='&tl_width='+zoom+'px&offset_element='+child_index;
+        if(detail)  new_url+='&detail=true';
+        this.location = new_url;
+
+    }
+
+    function setZoomElement(child_index,show_detail){
+        element = $('#TL_ELEMENT_'+child_index);
+        element.show();
+        element.removeClass('TL_ELEMENT_CRUSHED_SHOW');
+        element.removeClass('TL_ELEMENT_CRUSHED_HIDE');
+        console.log("element width: "+element.width());
+        console.log("element width: "+element.data('original_width'));
+        console.log("Inner width: "+$('#TL_ZONE_INNER').width());
+        let multiplier = 2;
+        if(show_detail) multiplier = 1.5;
+        let ratio = ($('#TL_ZONE_INNER').width() / (element.data('original_width')*multiplier));
+        console.log("ratio " + ratio);
+        let zoom = ($('#TL_ZONE').width() * ratio);
+        console.log("Zoom : "+zoom);
+
+        //cant zoom out to more than fully unzoomed
+        if(zoom < $('#TL_ZONE').width()){
+            zoom = $('#TL_ZONE').width();
+            offset=0;
+        }
+        setZoomPX(zoom,child_index,show_detail);
+
+    }
+
+    function drawChildren(ruler_marks, children) {
+        let lanes = [];
+        let markers = [];
+        let child_locations = [];
+        let lane_index = 1;
+        let previous_child_index=0;
+
+        children.forEach((child, child_index, arr) => {
+            console.log("STARTING::::::::: ("+child_index+") "+child.name+ " " + child.association_start_year + " - " +child.association_end_year );
+            child_locations[child_index] = [];
+            if(ruler_marks['scale']=='monthly') {
+                child_locations[child_index]['left'] = ruler_marks[child.association_start_year][child.association_start_month] + ruler_marks.ruler_lane_offset;
+                child_locations[child_index]['right'] = ruler_marks[child.association_end_year][child.association_end_month];
+                child_locations[child_index]['width'] = (child_locations[child_index]['right'] - child_locations[child_index]['left']) + ruler_marks.ruler_lane_offset;
+            }else if(ruler_marks['scale']=='yearly'){
+                child_locations[child_index]['left'] = ruler_marks[child.association_start_year][0] + ruler_marks.ruler_lane_offset;
+                child_locations[child_index]['right'] = ruler_marks[child.association_end_year][0];
+                child_locations[child_index]['width'] = (child_locations[child_index]['right'] - child_locations[child_index]['left']) + ruler_marks.ruler_lane_offset ;
+            }
+
+            let lane_with_space = 0;
+
+            if(child_index == 0){
+                lane_index = 0;
+                lane_with_space = 0;
+            }else{
+                //console.log("~~~~~~~~ index "+child_index+", search lanes ~~~~~~~~~~");
+                lane_with_space = 0;
+                lanes.forEach((lane, this_lane_index) =>{
+                    let space_available = true;
+                    if(lane_with_space == 0) {
+                        //console.log("checking lane " + this_lane_index);
+                        //console.log(lane.occupied_spaces);
+                        lane.occupied_spaces.forEach((space, space_index) => {
+                            //console.log(space);
+
+                            if (child_locations[child_index]['left']  == space[0] ||
+                                child_locations[child_index]['right'] == space[1] ||
+                                (child_locations[child_index]['left'] < space[0] && child_locations[child_index]['right'] > space[0]) ||
+                                (child_locations[child_index]['left'] < space[1] && child_locations[child_index]['right'] > space[1]) ||
+                                (child_locations[child_index]['left'] > space[0] && child_locations[child_index]['right'] < space[1]) ||
+                                (child_locations[child_index]['left'] < space[0] && child_locations[child_index]['right'] > space[1])
+                            ) {
+
+                                //console.log("collision found in " + this_lane_index + "! with object" + space_index);
+                                //console.log("Child: L" + child_locations[child_index]['left'] + "  R" + child_locations[child_index]['right']);
+                                //console.log("occupied space: " + space)
+                                space_available = false;
+
+                            } else {
+                                //console.log("NO collision found in " + this_lane_index + "! with object" + space_index);
+                            }
+
+                        });
+                        if (space_available) {
+                            //console.log('this lane (' + this_lane_index + ') has space for ' + child.name)
+                            lane_with_space = this_lane_index;
+                        }
+                    }
+                });
+
+            }
+
+            if(lane_with_space == 0){
+                //console.log("NO lane with space, create one");
+                lane_index ++;
+                clone_lane = $("#TL_LANE_PROTO").clone();
+                clone_lane.insertAfter("div.TL_LANE:last");
+                clone_lane.attr('id', 'TL_CHILD_LANE_'+lane_index);
+                clone_lane.show();
+                lane_with_space = lane_index;
+                lanes[lane_index] = clone_lane;
+            }
+
+            ////console.log("PLACING:::::::::: "+child.name+ " " + child.association_start_year + " - " +child.association_end_year );
+            clone_child=$("#TL_ELEMENT_PROTO").clone();
+            clone_child.attr('id', 'TL_ELEMENT_'+child_index);
+            $("#TL_CHILD_LANE_"+lane_with_space).append(clone_child);
+
+
+            //change offset months to named months
+            child.association_start_month += 1;
+            child.association_end_month += 1;
+
+            lable = child.name+ " <br /> ("+ child.association_start_month +", " + child.association_start_year +   " - " + child.association_end_month +", " + child.association_end_year + ")"
+            child_time = "("+ child.association_start_month +", " + child.association_start_year +   " - " + child.association_end_month +", " + child.association_end_year + ")";
+            $('<p>'+lable+'</p>').appendTo('#TL_ELEMENT_'+child_index+" .TL_ELEMENT_NAME");
+
+            clone_child.addClass('TL_ELEMENT_CHILD');
+            clone_child.css('left',child_locations[child_index]['left']+'px');
+            clone_child.css('min-width',child_locations[child_index]['width']+'px');
+            clone_child.css('max-width',child_locations[child_index]['width']+'px');
+            clone_child.data('original_width',child_locations[child_index]['width']);
+
+            if(child_locations[child_index]['width'] > min_child_width &&
+                clone_child.height() < stripPX($(".TL_LANE").css('min-height'))) {
+                clone_child.data('crushed',false);
+                child_locations[child_index]['hidden'] = false;
+
+            }else{
+                //child_locations[child_index]['width'] = min_child_width;
+                clone_child.data('crushed',true);
+                clone_child.addClass('TL_ELEMENT_CRUSHED');
+                //clone_child.css('min-width',min_child_width+"px");
+                child_locations[child_index]['hidden'] = true;
+            }
+
+            let tl_zoom = clone_child.find('div.TL_ZOOM'); //setZoomElement(child_index);
+            if(tl_zoom){
+                tl_zoom.on('click',function(){
+                    setZoomElement(child_index,false);
+                });
+            }
+            let tl_detail = clone_child.find('div.TL_DETAIL'); //setZoomElement(child_index);
+            if(tl_detail){
+                tl_detail.on('click',function(){
+                    setZoomElement(child_index,true);
+                });
+            }
+
+            clone_child.removeClass('PROTO');
+            clone_child.show();
+
+            ////console.log('FIX HEIGHTS');
+            /*if ($("#TL_CHILD_LANE_"+lane_with_space).height() < $('#TL_ELEMENT_'+child_index).height()){
+                $('#TL_CHILD_LANE_'+lane_with_space).css('min-height',$('#TL_ELEMENT_'+child_index).height()+"px");
+            }*/
+
+            if(!lanes[lane_with_space]['occupied_spaces']) lanes[lane_with_space]['occupied_spaces']=[];
+            lanes[lane_with_space]['occupied_spaces'].push([child_locations[child_index]['left'], child_locations[child_index]['right']]);
+
+
+            /** Setup the markers **/
+
+            const this_markers_element = $('#TL_ELEMENT_' + child_index);
+            const this_marker_left = child_locations[child_index]['left'] - ($("#RULER_MARKER_ORIGINAL").width()/2);
+            const this_marker_right = this_marker_left+20;
+            let marker_collision = false;
+
+            //console.log("!!! MARKER SO FAR !!!")
+            //console.log(markers);
+            if(markers.length > 1) {
+                markers.forEach(function (marker, marker_index, arr) {
+                    if (this_marker_left == marker['left'] ||
+                    (this_marker_left < marker['left'] && this_marker_right > marker['left']) ||
+                    (this_marker_left > marker['left'] && this_marker_left < marker['right'])) {
+                        //console.log(marker_index+' marker collision for child ' + child_index);
+                        //console.log(marker_index+"    :: "+marker['left'] + ", "+marker['right']);
+                        //console.log("This :: "+this_marker_left + ", "+this_marker_right);
+                        marker_collision = true;
+                        if(!markers[marker_index]['children']) markers[marker_index]['children'] =[];
+
+                        markers[marker_index]['children'].push(child_index);
+
+                        tool_tip_select=$('#RULER_MARKER' +marker_index+ ' .tooltiptext')
+                        existing_tooltip = tool_tip_select.html();
+                        tool_tip_select.html(existing_tooltip+",<br /> "+child.name);
+
+                        const this_sub_marker = $('#RULER_MARKER' +marker_index);
+                        const this_sub_markers_element = $('#TL_ELEMENT_' + marker_index);
+
+                        //$('#RULER_MARKER' + marker_index + " span.elements_number").html("2");
+                        ruler_marker_number_selection =$('#RULER_MARKER' + marker_index + " span.elements_number");
+                        ruler_marker_number = ruler_marker_number_selection.html();
+                        ruler_marker_number = parseInt(ruler_marker_number)  + 1;
+                        ruler_marker_number_selection.html(ruler_marker_number) ;
+                        this_markers_element.addClass('ELEMENT_OF_MARKER_'+marker_index);
+
+                        /*this_sub_marker.on("mouseover", function () {
+                            if(this_markers_element.data('crushed')){
+                                console.log("fading in sub marker element "+child.name);
+                                this_markers_element.addClass('TL_ELEMENT_CRUSHED_SHOW');
+                                this_markers_element.removeClass('TL_ELEMENT_CRUSHED_HIDE');
+                            }else{
+                                console.log("coloring sub marker element "+child.name);
+                                this_markers_element.css('background-color', 'yellow');
+                            }
+
+                            /*setTimeout(function(){
+                                this_sub_markers_element.css('background-color', '');
+                                this_sub_markers_element.css('z-index', 1);
+                                if(this_sub_markers_element.data('CRUSHED')) {
+                                    this_sub_markers_element.hide();
+                                    this_sub_markers_element.removeClass('TL_ELEMENT_CRUSHED');
+                                }
+                            },10000);*/
+
+                        /*});
+                        this_sub_marker.on("mouseout", function () {
+                            this_markers_element.css('background-color', '');
+                            this_markers_element.css('z-index', 1);
+                            if(this_markers_element.data('crushed')) {
+                                //this_markers_element.hide();
+                                this_markers_element.removeClass('TL_ELEMENT_CRUSHED_SHOW');
+                                this_markers_element.addClass('TL_ELEMENT_CRUSHED_HIDE');
+                            }
+                        });*/
+                    }
+                });
+            }
+
+            if(!marker_collision) {
+
+                //console.log("No marker collision");
+                clone_marker = $("#RULER_MARKER_ORIGINAL").clone();
+                clone_marker.attr('id', 'RULER_MARKER' + child_index);
+
+                this_markers_element.addClass('ELEMENT_OF_MARKER_'+child_index);
+
+                $("#TL_RULER").append(clone_marker);
+
+                //move marker over to the location of the child element - half its width
+                clone_marker.css('left', this_marker_left + 'px');
+                clone_marker.data('marker_id',child_index);
+
+                /*if(child_index != '<%= offset_element %>'){
+                    clone_marker.on("click", function () {
+                        if(this_markers_element.data('crushed')){
+                            this_markers_element.removeClass('TL_ELEMENT_CRUSHED_HIDE');
+                            this_markers_element.addClass('TL_ELEMENT_CRUSHED_SHOW');
+                        }
+                        setZoomElement(child_index);
+                    });
+                }else{
+                    clone_marker.css('cursor', 'zoom-out');
+                    clone_marker.on("click", function () {
+                        unZoom();
+                    });
+                }*/
+
+                /*clone_marker.on("mouseover", function () {
+
+                    if(this_markers_element.data('crushed')) {
+                        //console.log("fading in marker element "+child.name);
+                        this_markers_element.css('z-index', 2);
+                        this_markers_element.addClass('TL_ELEMENT_CRUSHED_SHOW');
+                        this_markers_element.removeClass('TL_ELEMENT_CRUSHED_HIDE');
+                    }else{
+                        //console.log("dying marker element "+child.name);
+                        this_markers_element.css('background-color', 'yellow');
+                    }
+
+                });*/
+
+                /*clone_marker.on("mouseout", function () {
+                    this_markers_element.css('background-color', '');
+                    if(this_markers_element.data('crushed')){
+                        this_markers_element.removeClass('TL_ELEMENT_CRUSHED_SHOW');
+                        this_markers_element.addClass('TL_ELEMENT_CRUSHED_HIDE');
+                        //this_markers_element.hide();
+                    }
+                });*/
+
+                $('#RULER_MARKER' +child_index+ ' .tooltiptext').html(child.name);
+
+                if(child_locations[child_index]['hidden']){
+                    $('#RULER_MARKER' +child_index+ ' .RULER_MARKER_BOT').addClass('RULER_MARKER_BOT_UNSEEN');
+                    $('#RULER_MARKER' +child_index+ ' .RULER_MARKER_TOP').addClass('arrow-up_UNSEEN');
+                }
+
+                markers[child_index]=[];
+                markers[child_index]['left'] = this_marker_left;
+                markers[child_index]['right'] = this_marker_right;
+                markers[child_index]['children'] = [];
+                //console.log(markers);
+            }
+            previous_child_index = child_index;
+        });
+
+        $('.RULER_MARKER').on("click",function(){
+                console.log(this);
+                console.log($(this).data('marker_id'));
+
+                //console.log(marker.attr('data-marker_id'));
+                //console.log(marker.attr('data-marker_id'));
+                showCrushed($(this).data('marker_id'),stripPX($(this).css('left')));
+        });
+        //console.log("lanes: ");
+        //console.log(lanes);
+        //console.log("child locations : ");
+        //console.log(child_locations);
+        return child_locations;
+    } //END drawChildren
+
+    function drawRuler(canvas_scale,tl_object,ctx,canvas_width){
+
+       console.log("RULER CANVAS SCALE:::: "+canvas_scale);
+       let canvas_correction = 0;
+        if(canvas_scale > 1) {
+            canvas_correction = 10 * canvas_scale;
+        }
+        console.log("Canvas correction "+canvas_correction)
+        let min_yearly_pixel_time = 45;
+        let time_scale = 1;
+        let sub_tick_sub_division = 12;
+        let tall_sub_tick = 2;
+        let sub_tick_scale = 'monthly';
+        let ruler_marks = [];
+        let pixel_time = Math.round((canvas_width * canvas_scale) / (tl_object.year_duration + 1.75));
+        //let pixel_time = main_element.width() / (tl_object.year_duration);
+        console.log('Pixel tile: '+pixel_time);
+        //console.log('end rough month: '+tl_object.end_rough_month);
+
+        if(pixel_time < min_yearly_pixel_time){
+            //time_scale = 10; //10 years
+            time_scale = time_scaling = 5;
+            tall_sub_tick = 5;
+            tl_object.start_rough_year = tl_object.start_render_year;
+            pixel_time = (canvas_width / (tl_object.render_year_duration + (1/time_scaling))) * time_scale;
+            sub_tick_scale = 'yearly';
+            while(time_scale * pixel_time < min_yearly_pixel_time){ // scale until time scale below threashhold
+                if(time_scale < 10) time_scale = time_scaling = 10;
+                if(time_scale * pixel_time < min_yearly_pixel_time){
+                    time_scale = time_scale * time_scaling;
+                }
+            }
+            /*//console.log("remainder: ");
+            //console.log(tl_object.render_year_duration % time_scale);*/
+            //pixel_time = main_element.width() / ((tl_object.year_duration / time_scale) + ((tl_object.year_duration % time_scale) / 2));
+
+            sub_tick_sub_division = time_scale;
+        }
+        ruler_marks['scale']=sub_tick_scale;
+
+
+        //console.log("year duration: "+tl_object.year_duration);
+        //console.log("width: "+canvas_width);
+        console.log("TIME SCALE: "+time_scale);
+        console.log("PIXEL TIME: "+pixel_time);
+        console.log("width / PIXEL TIME: "+canvas_width / pixel_time);
+        console.log("width / sub tick: "+canvas_width / sub_tick_sub_division);
+
+
+        //assumes scale = yearly
+        let line_x = 0;
+        let line_x_increment = (pixel_time / canvas_scale);
+        let year_increment = time_scale;
+        let sub_tick_increment = (line_x_increment / sub_tick_sub_division);
+
+        for(year_count = tl_object.start_rough_year; year_count <= tl_object.end_rough_year; year_count = year_count + year_increment) {
+
+            ctx.strokeStyle = 'black 1px solid';
+            ctx.beginPath();
+            //ctx.moveTo(line_x, 40);
+            ctx.moveTo(line_x, 35);
+            ctx.lineTo(line_x, 50);
+            ctx.stroke();
+
+            ctx.font = "15px Arial";
+            ctx.fillText(year_count, line_x - 3, 30);
+
+            if(year_count <= tl_object.end_rough_year) {
+                for (sub_tick = 0; sub_tick < sub_tick_sub_division; sub_tick++) {
+                    if(sub_tick_scale == 'yearly' && sub_tick+year_count >= tl_object.end_rough_year + 1) break;
+                    if(sub_tick_scale == 'monthly' && year_count == tl_object.end_rough_year && sub_tick >= tl_object.end_rough_month + 1) break;
+
+                    ctx.strokeStyle = 'black 1px solid';
+                    ctx.beginPath();
+                    if ((sub_tick_scale == 'yearly' && tall_sub_tick && sub_tick % tall_sub_tick == 0) ||
+                        (sub_tick_scale == 'monthly' && (sub_tick == 5))) {
+                        ctx.moveTo(line_x + (sub_tick * sub_tick_increment), 40);
+                    } else {
+                        ctx.moveTo(line_x + (sub_tick * sub_tick_increment), 45);
+                    }
+                    ctx.lineTo(line_x + (sub_tick * sub_tick_increment), 50);
+                    ctx.stroke();
+
+                    if(sub_tick_scale == 'yearly'){
+                        if(!ruler_marks[year_count+sub_tick]) ruler_marks[year_count+sub_tick] = []; ruler_marks[year_count+sub_tick][0] = [];
+                        ruler_marks[year_count+sub_tick][0]=((line_x + (sub_tick * sub_tick_increment)) * canvas_scale) + canvas_correction;
+                    }else if(sub_tick_scale == 'monthly'){
+                        if(!ruler_marks[year_count]) ruler_marks[year_count]= []; ruler_marks[year_count][sub_tick] = [];
+                        ruler_marks[year_count][sub_tick]=((line_x + (sub_tick * sub_tick_increment)) * canvas_scale) + canvas_correction;
+                    }
+
+                }
+            }
+            line_x = line_x + line_x_increment;
+
+        }
+        //console.log("year "+year_count);
+        ruler_marks.ruler_lane_offset = $("#TL_RULER canvas").offset().left - $("#TL_RULER canvas").parents('.TL_LANE').offset().left;
+        return ruler_marks;
+    }
+</script>
+
+
+
+
+<%- include('partials/footer') %>
+
