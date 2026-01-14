@@ -20,9 +20,10 @@
         outline: solid 1px black;
         min-width:95%;
         max-width: 95%;
-        min-height: 500px;
+        min-height: 700px;
         margin:20px;
         overflow-x: hidden;
+        background-color: #eee;
     }
     #TL_ZONE_INNER{
         min-width: <%= tl_width %>;
@@ -210,10 +211,11 @@
         transform-origin: left top;
     }
 
-
     .TL_ELEMENT_NAME{
         float:right;
         margin:5px;
+        max-width: 500px;
+        position:relative;
     }
     .TL_ELEMENT_CONTROL{
         float:left;
@@ -233,9 +235,6 @@
     .TL_ELEMENT_CRUSHED_SHOW{
         z-index: 20 !important;
     }
-    .TL_ELEMENT_HIGHLIGHTED{
-        z-index: 20 !important;
-    }
     .tooltiptext{
         z-index: 30 !important;
     }
@@ -244,6 +243,9 @@
     }
     .TL_SCROLL_TO{
         z-index: 40 !important;
+    }
+    .TL_ELEMENT_HIGHLIGHTED{
+        z-index: 50 !important;
     }
 
 
@@ -276,6 +278,7 @@
 
         </div>
         <div class="TL_ELEMENT PROTO" id="TL_ELEMENT_PROTO">
+
             <div class="TL_ELEMENT_CONTROL">
                 <div class="TL_ZOOM tooltip_element">🔍<span class="tooltiptext">Zoom</span></div>
                 <div class="TL_DETAIL tooltip_element">👁<span class="tooltiptext">Details</span></div>
@@ -345,7 +348,43 @@
     let zone_width =0
     let zone_inner_width =0
     let canvas_inner_width =0
+    let scrolling = false;
     document.addEventListener("DOMContentLoaded", (event) => {
+
+        $( "#TL_ZONE" ).on( "scroll", function() {
+            if(!scrolling) { //dont scroll while you are scrolling or you will scroll your scroll
+                scrolling = true;
+                setTimeout(function() //only scroll every second
+                {
+                    zone_scroll = $("#TL_ZONE").scrollLeft();
+                     $(".TL_ELEMENT_NAME").each(function () {
+                        this_parent_left = $(this).parent().offset().left;
+                        if (this_parent_left < 1) {
+                            this_parent_left = (this_parent_left * -1);
+                            //console.log("Offset: "+this_parent_left+"   Width: "+$(this).width());
+                            if(this_parent_left < $(this).parent().width() - $(this).width()) {
+                                $(this).animate({
+                                    'left': this_parent_left + 'px'
+                                },1000);
+                                console.log("GO LEFT: " + this_parent_left);
+                            }else{
+                                $(this).animate({
+                                    'left': '0px'
+                                },1000);
+                            }
+                        }else{
+                            $(this).animate({
+                                'left': '0px'
+                            },1000);
+                        }
+                    });
+                    scrolling = false;
+                }, 1000);
+                scrolling = true;
+            }
+
+
+        } );
 
         const fetch_url = '<%= fetch_url %>';
         const zoom = 0;
@@ -588,7 +627,7 @@
                 lane_index = 0;
                 lane_with_space = 0;
             }else{
-                //console.log("~~~~~~~~ index "+child_index+", search lanes ~~~~~~~~~~");
+                console.log("~~~~~~~~ index "+child_index+", search lanes ~~~~ " + child_locations[child_index]['left']+ " ~~~~~~ " + child_locations[child_index]['right']);
                 lane_with_space = 0;
                 lanes.forEach((lane, this_lane_index) =>{
                     let space_available = true;
@@ -603,21 +642,26 @@
                                 (child_locations[child_index]['left'] < space[0] && child_locations[child_index]['right'] > space[0]) ||
                                 (child_locations[child_index]['left'] < space[1] && child_locations[child_index]['right'] > space[1]) ||
                                 (child_locations[child_index]['left'] > space[0] && child_locations[child_index]['right'] < space[1]) ||
-                                (child_locations[child_index]['left'] < space[0] && child_locations[child_index]['right'] > space[1])
+                                (child_locations[child_index]['left'] < space[0] && child_locations[child_index]['right'] > space[1]) ||
+                                /** account for padding for controls**/
+                                (child_locations[child_index]['left'] < space[0] + 40 && child_locations[child_index]['right'] > space[0]) ||
+                                (child_locations[child_index]['left'] > space[0] + 40 && child_locations[child_index]['right'] < space[1]) ||
+                                (child_locations[child_index]['left'] < space[0] + 40  && child_locations[child_index]['right'] > space[1])
+
                             ) {
 
-                                //console.log("collision found in " + this_lane_index + "! with object" + space_index);
+                                console.log("collision found in " + this_lane_index + "! with object" + space_index);
                                 //console.log("Child: L" + child_locations[child_index]['left'] + "  R" + child_locations[child_index]['right']);
                                 //console.log("occupied space: " + space)
                                 space_available = false;
 
                             } else {
-                                //console.log("NO collision found in " + this_lane_index + "! with object" + space_index);
+                                console.log("NO collision found in " + this_lane_index + "! with object" + space_index);
                             }
 
                         });
                         if (space_available) {
-                            //console.log('this lane (' + this_lane_index + ') has space for ' + child.name)
+                            console.log('this lane (' + this_lane_index + ') has space for ' + child.name)
                             lane_with_space = this_lane_index;
                         }
                     }

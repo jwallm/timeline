@@ -1,0 +1,171 @@
+<%- include('partials/header') %>
+
+<style>
+    .input-container {
+        max-width: 800px;
+        margin: 30px auto;
+        padding: 20px;
+    }
+    .input-container h1 {
+        margin-bottom: 10px;
+    }
+    .user-info {
+        margin-bottom: 20px;
+        color: #666;
+    }
+    .user-info a {
+        color: #007bff;
+    }
+    .form-section {
+        background: #f9f9f9;
+        padding: 20px;
+        margin-bottom: 30px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+    }
+    .form-section h2 {
+        margin-top: 0;
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 10px;
+    }
+    .form-group {
+        margin-bottom: 15px;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+    .form-group input,
+    .form-group select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+    }
+    .form-row {
+        display: flex;
+        gap: 15px;
+    }
+    .form-row .form-group {
+        flex: 1;
+    }
+    .btn-submit {
+        padding: 12px 24px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+    .btn-submit:hover {
+        background-color: #218838;
+    }
+    .alert-success {
+        background-color: #d4edda;
+        color: #155724;
+        padding: 10px;
+        border-radius: 4px;
+        margin-bottom: 15px;
+    }
+    .alert-error {
+        background-color: #f8d7da;
+        color: #721c24;
+        padding: 10px;
+        border-radius: 4px;
+        margin-bottom: 15px;
+    }
+</style>
+
+<div class="input-container">
+    <h1>Add Timeline Data</h1>
+    <p class="user-info">Welcome, <%= user.username %>! <a href="/logout">Logout</a></p>
+
+    <% if (success) { %>
+        <div class="alert-success"><%= success %></div>
+    <% } %>
+    <% if (error) { %>
+        <div class="alert-error"><%= error %></div>
+    <% } %>
+
+    <!-- Add Timeline Element Form -->
+    <div class="form-section">
+        <h2>Add New Timeline Element</h2>
+        <form action="/input/element" method="POST">
+            <div class="form-group">
+                <label for="element_name">Name *</label>
+                <input type="text" id="element_name" name="name" required>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="element_start_date">Start Date *</label>
+                    <input type="date" id="element_start_date" name="start_date" required>
+                </div>
+                <div class="form-group">
+                    <label for="element_end_date">End Date (optional)</label>
+                    <input type="date" id="element_end_date" name="end_date">
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit">Add Element</button>
+        </form>
+    </div>
+
+    <!-- Add Association Form -->
+    <div class="form-section">
+        <h2>Add Association Between Elements</h2>
+        <form action="/input/association" method="POST">
+
+            <div class="form-group">
+                <label for="element_id">Child Element *</label>
+                <select id="element_id" name="element_id" required>
+                    <option value="">-- Select Child --</option>
+                    <% elements.forEach(function(el) { %>
+                        <option value="<%= el.id %>"><%= el.name %></option>
+                    <% }); %>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="association_type_id">Association Type *</label>
+                <select id="association_type_id" name="association_type_id" required>
+                    <option value="">-- Select Type --</option>
+                    <% associationTypes.forEach(function(at) { %>
+                        <option value="<%= at.id %>"><%= at.description %></option>
+                    <% }); %>
+                </select>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="parent_id">Parent Element *</label>
+                    <select id="parent_id" name="parent_id" required>
+                        <option value="">-- Select Parent --</option>
+                        <% elements.forEach(function(el) { %>
+                            <option value="<%= el.id %>"><%= el.name %></option>
+                        <% }); %>
+                    </select>
+                </div>
+
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="assoc_start_date">From Date</label>
+                    <input type="date" id="assoc_start_date" name="start_date">
+                </div>
+                <div class="form-group">
+                    <label for="assoc_end_date">To Date</label>
+                    <input type="date" id="assoc_end_date" name="end_date">
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit">Add Association</button>
+        </form>
+    </div>
+</div>
+
+<%- include('partials/footer') %>

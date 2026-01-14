@@ -8,8 +8,41 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><%= title %></title>
+    <style>
+        .nav-bar {
+            background-color: #333;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .nav-bar a {
+            color: white;
+            text-decoration: none;
+            margin-right: 15px;
+        }
+        .nav-bar a:hover {
+            text-decoration: underline;
+        }
+        .nav-user {
+            color: #aaa;
+        }
+    </style>
 </head>
 
-
-
 <body>
+<nav class="nav-bar">
+    <div>
+        <a href="/">Timeline</a>
+        <% if (typeof isAuthenticated !== 'undefined' && isAuthenticated) { %>
+            <a href="/input">Add Data</a>
+        <% } %>
+    </div>
+    <div class="nav-user">
+        <% if (typeof isAuthenticated !== 'undefined' && isAuthenticated) { %>
+            Welcome, <%= user.username %> | <a href="/logout">Logout</a>
+        <% } else { %>
+            <a href="/user_login">Login</a>
+        <% } %>
+    </div>
+</nav>

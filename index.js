@@ -1,4 +1,5 @@
 const express = require('express');
+const session = require('express-session');
 const app = express();
 app.set('view engine', 'ejs');
 
@@ -6,17 +7,80 @@ const hostname = '127.0.0.1';
 const port = 9000;
 const DB_CLASS = require("./core/db.js");
 const timeline_class = require("./controllers/timeline.js");
+const { requireAuth, addUserToViews } = require('./middleware/auth.js');
+const { UserController } = require('./controllers/user.js');
+const { InputController } = require('./controllers/input.js');
 const fetch_url = 'http://127.0.0.1:9000/get_timeline';
 
 Database = new DB_CLASS.DB;
 
+const userController = new UserController();
+const inputController = new InputController();
+
+const bcrypt = require('bcrypt');
+bcrypt.hash('password123', 12).then(hash => console.log(hash));
 
 new Promise((resolve, reject)=>{
+
+    // Body parsing middleware
+    app.use(express.urlencoded({ extended: true }));
+    app.use(express.json());
+
+    // Session middleware
+    app.use(session({
+        secret: process.env.SESSION_SECRET || 'dev-secret-change-in-production',
+        resave: false,
+        saveUninitialized: false,
+        cookie: {
+            secure: false,
+            httpOnly: true,
+            maxAge: 24 * 60 * 60 * 1000
+        }
+    }));
+
+    // Add user info to all views
+    app.use(addUserToViews);
 
     app.use(express.static('views'));
     //app.use(express.static(path.join(__dirname, "public")));
     //app.use(express.static('./'));
 
+
+    // ========== AUTHENTICATION ROUTES ==========
+
+    app.get('/user_login', (req, res) => {
+        if (req.session && req.session.userId) {
+            return res.redirect('/');
+        }
+        userController.showLoginPage(req, res);
+    });
+
+    app.post('/user_login', (req, res) => {
+        if (req.session && req.session.userId) {
+            return res.redirect('/');
+        }
+        userController.handleLogin(req, res);
+    });
+
+    app.get('/logout', (req, res) => {
+        userController.handleLogout(req, res);
+    });
+
+    // ========== PROTECTED INPUT ROUTES ==========
+
+    app.get('/input', requireAuth, (req, res) => {
+        inputController.showInputPage(req, res);
+    });
+
+    app.post('/input/element', requireAuth, (req, res) => {
+        inputController.createTimelineElement(req, res);
+    });
+
+    app.post('/input/association', requireAuth, (req, res) => {
+        inputController.createAssociation(req, res);
+    });
+
+    // ========== EXISTING ROUTES ==========
 
     app.get('/', (req, res) => {
         let request_url = fetch_url;
