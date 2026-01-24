@@ -190,7 +190,7 @@ Wikipedia API integration
 * ☑ request limit?
 	* ☑ 5000 / hr with key
 	* ☑ 500 / hr no key
-* ☐ loginn JasonWMcC PW: hbox excite
+* ☐ loginn
 * ☑ data is not structured
 	* ☑ only included name, some meta data and huge HTML blob
 * ☐ add wikipedia api ID to the db
