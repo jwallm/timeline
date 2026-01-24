@@ -1,4 +1,4 @@
-# time line todo list and progress
+# time line
 Created Monday 17 November 2025
 
 ![](./time_line_files/pasted_image.png)
@@ -252,8 +252,8 @@ Next steps
 	* ☒ figure out the modal library to use
 		* ☐ maye make it myself or use soemthing simple
 	* ☒ launch modal
-	* ☐ fill modal with data
-	* ☐ fill modal with partial time line
+	* ☒ fill modal with data
+	* ☒ fill modal with partial time line
 		* ☐ time line modal should be visually linked to time line element
 * ☑ allow off-screen scrolling zoom mode
 	* ☑ mode to show-all with the off-screen
@@ -265,27 +265,44 @@ Next steps
 	* ☒ create issue whe ntryingto scroll to evens out of the zone
 	* ▷ instead create multiple canvas elements side by side
 * ▷ **new element types**
-	* ☐ create elemnt type with no end date
+	* ▷ create elemnt type with no end date
+		* ☑ or just treat thigns with no end a different way
 	* ☐ abutting era dividers
 * ▷ link same elements with seperate associations
 	* ☑ associated elements should link visually
 		* ☐ same lane?
-		* ☐ draw a line between
+		* ☑ draw a line between
 			* ☐ line system located but is not relative to scrolling elements (absolute)
 * ☐ handle **deep zoom** with multiple canvas elements
 * ☐ **add days zoom level**
 	* ☐ will reuire more / different computation
 * ☐ add api connection for wikipedia
 * ☐ fill body with **pull from Wikipedia**
+* ☑ fill body with DB content
 * ☐ **add location** to assocaition
+	* ☐ continent
+	* ☐ country
+	* ☐ city / town
+	* ☐ lat/lon?
 * ☐ allow for **date uncertainty** (missing day/month)
-* ☐ add **focus** button to make eleemnt the time line
+* ☐ add **focus** button to make element the time line
 * ☐ add **bread crumb** to rewind focus
+* ▷ add request caching
+	* ☐ use request ID as key
+	* ☐ bust cache
+		* ☐ when ever anything is associated to the requested element id
+		* ☐ when an association to the element id is edited
+		* ☐ when the element is edited
+	* ☐ library
+		* ☐ memchache
+			* ☐ fetches a string based on a key
+			* ☐ probably perfect for my simple application
+		* ☐ redis
+			* ☐ lots of features but Im not going to use most of them
 * ☐ find nodejs hosting!
 	* ☐ or fake the back end
 
 
-looks ya react Js
 
 BUG
 ---
